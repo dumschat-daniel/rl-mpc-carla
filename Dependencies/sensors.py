@@ -223,8 +223,11 @@ class IMU_Sensor(SensorInterface):
         self.sensor = world.spawn_actor(imu_bp, transform, attach_to=vehicle)
         self.sensor.listen(self.callback)
 
+        self.last_steering_value = None
     def callback(self, event):
         self.event = event
+
+
 
 
     def destroy(self):
@@ -625,7 +628,7 @@ class GNSS_sensor(SensorInterface):
 
 
     
-    def draw_waypoint(self, world, waypoint_location, visualization_life_time=20):
+    def draw_waypoint(self, world, waypoint_location, visualization_life_time=30):
         """Visualization of the Waypoints including their Radius."""
 
         # draw waypoint

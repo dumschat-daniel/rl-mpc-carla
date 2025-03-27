@@ -38,7 +38,7 @@ if quick_setup is not None:
     settings.EXPERIENCE_REPLAY_METHOD = 'reward_old'
     settings.EXPERIENCE_REPLAY_SIZE = 50_000
     settings.MIN_EXPERIENCE_REPLAY_SIZE = 500 
-    settings.MODEL_INPUTS = {'front_camera': False, 'lidar': False, 'radar': False, 'relative_pos': True, 'relative_orientation': False, 'collision': False, 'lane_invasion': False, 'speed': True, 'last_action': False, 'last_agent_input': False, 'distance_to_lane_center': True, 'orientation_difference_to_lane_center': False, 'close_vehicles': False, 'acceleration': False, 'yaw_angle': False, 'jerk_rate': False, 'traffic_light_state': False, 'obstacle': False}
+    settings.MODEL_INPUTS = {'front_camera': False, 'lidar': False, 'radar': False, 'relative_pos': True, 'relative_orientation': False, 'collision': False, 'lane_invasion': False, 'speed': True, 'last_action': False, 'last_agent_input': False, 'distance_to_lane_center': True, 'orientation_difference_to_lane_center': False, 'close_vehicles': False, 'acceleration': False, 'yaw_angle': False, 'jerk_rate': True, 'traffic_light_state': False, 'obstacle': False}
     settings.TAU = 0.001 
     settings.ACTOR_GRADIENT_CLIP_NORM = 1 
     settings.CRITIC_GRADIENT_CLIP_NORM = 5 
@@ -76,7 +76,7 @@ else:
 
 if quick_setup in ['phase-1','phase-2','phase-3']:
     settings.RL_ALGORITHM = 'ddpg'
-    settings.MIN_EXPERIENCE_REPLAY_SIZE = 5_000
+    settings.MIN_EXPERIENCE_REPLAY_SIZE = 5_00 #5_000
     settings.NOISE_TYPE = 'GaussianNoise'
     settings.NOISE_THROTTLE_PARAMS = {'mu': 0.0, 'theta': 0.2, 'sigma': 0.2, 'min_sigma': 0.05, 'sigma_decay': 0.999} 
     settings.NOISE_STEERING_PARAMS = {'mu': 0.0, 'theta': 0.2, 'sigma': 0.2, 'min_sigma': 0.05, 'sigma_decay': 0.999} 
@@ -89,8 +89,8 @@ if quick_setup in ['phase-1','phase-2','phase-3']:
 
     elif quick_setup == 'phase-2':
         settings.USE_MPC = True
-        settings.MPC_CRITIC_START_EPSILON = 1.0 
-        settings.MPC_CRITIC_EPSILON_DECAY = 0.9995 
+        settings.MPC_CRITIC_START_EPSILON = 0.25 
+        settings.MPC_CRITIC_EPSILON_DECAY = 0.9995
         settings.MPC_CRITIC_EPSILON_MIN = 0.0 
         settings.MPC_EXPLORATION_START_EPSILON = 0.25
         settings.MPC_EXPLORATION_EPSILON_DECAY = 0.95 

@@ -95,6 +95,7 @@ class CarlaEnv:
 
         self.actions = [getattr(ACTIONS, action) for action in settings.ACTIONS]
 
+        self.last_steering_value = None
         
     
     def reset(self, sp=None):
@@ -295,14 +296,29 @@ class CarlaEnv:
             sensor_data['yaw_angle'] = math.radians(self.vehicle.transform.rotation.yaw)
 
         if model_inputs['jerk_rate']:
-            ...
+            if self.last_steering_value is None or action is None:
+                sensor_data['jerk_rate'] = 0.0
+            else:
+                sensor_data['jerk_rate'] = (abs(self.last_steering_value - action[1]) ** 2)
+
+            
         if model_inputs['traffic_light_state']:
             sensor_data['traffic_light_state'] = self.gnss_sensor.get_traffic_light_state()
 
         return sensor_data, agent_view
     
 
+    def calculate_jerk_reward(self, steering,):
+        if self.last_steering_value is None:
+            reward = 0
+        else:
+            reward = min(abs(self.last_steering_value - steering) * 3, settings.JERK_MAX_PENALTY) 
+
+        self.last_steering_value = steering
+
+        return -reward
     
+
     def get_rewards(self, action=None):
         """calculate the Rewards for the Step and checks for Terminal Conditions"""
         done = False
@@ -350,7 +366,14 @@ class CarlaEnv:
                 self.additional_data['episode_end_reason'] = 2
                 return lane_center_reward, done
             
-            
+        if settings.REWARD_FUNCTION_METRICS['jerk']:
+            jerk_reward = self.calculate_jerk_reward(action[1])
+            reward += jerk_reward
+            self.additional_data.setdefault('jerk_rewards', 0)
+            self.additional_data['jerk_rewards'] += jerk_reward
+
+
+
         if settings.REWARD_FUNCTION_METRICS['speed']:    
             v = self.vehicle.get_velocity()
             ms = np.linalg.norm([v.x, v.y, v.z]) 

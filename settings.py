@@ -1,7 +1,7 @@
 QUICK_SETUP = 'ddpg' # phase-1, phase-2, phase-3, dqn, ddpg, td3 # Sets up most important parameters to default settings. (Phase 1,2,3 uses ddpg)
 
 # Carla setup
-CARLA_PATH = '../../' # path to your carla installation 
+CARLA_PATH = 'C:/Users/ddums/Desktop/WindowsNoEditor' # path to your carla installation 
 CARLA_HOSTS_TYPE = 'local'
 DONT_RENDER_VISUALS = True # last parameter of carla hosts, if yes it doesn't render visuals which speeds up training. Visuals Sensors won't work.
 CARLA_HOSTS = [['localhost', 2000, 'Town10HD_Opt', False, False, DONT_RENDER_VISUALS]] # host, port (first of 2 consecutive ports), map, fps benchmark, quality level, no render mode
@@ -347,7 +347,7 @@ NEPTUNE_API_TOKEN = ""
 # Testing 
 # Testing disables all end criteriums but the max steps, collision or the correct absolvation of the scenario
 TESTING_CARLA_HOST = [['localhost', 2000, 'Town04_Opt', False, False, False]] # host, port (first of 2 consecutive ports), map, fps benchmark, quality level, no render mode
-TESTING_ROUTE_AREA = [0,40] # using route 0 to 40 for testing
+TESTING_ROUTE_AREA = [0,3] # using route 0 to 40 for testing
 TESTING_MAX_STEPS = 500 # max steps before scenario counts as failed
 TESTING_RL_ALGORITHM = "ddpg" # used rl algorithm
 TESTING_PREVIEW = True # preview uses testing camera settings and only works if no render mode is False (last setting in host)

@@ -159,10 +159,10 @@ def state_encoder(model_inputs, model_settings):
         inputs.append(yaw_angle_input)  
 
     if model_settings['jerk_rate']:
-        yaw_rate_input = Input(shape=(1,), name='yaw_rate_input')
-        y = Dense(32, activation='relu')(yaw_rate_input)
+        jerk_input = Input(shape=(1,), name='jerk_input')
+        y = Dense(32, activation='relu')(jerk_input)
         x = y if x is None else Concatenate()([x, y])
-        inputs.append(yaw_rate_input)
+        inputs.append(jerk_input)
 
     if model_settings['traffic_light_state']:
         traffic_light_state_input = Input(shape=(1,), name='traffic_light_state_input')

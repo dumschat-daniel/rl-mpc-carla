@@ -283,6 +283,10 @@ class ARTDQNAgent:
             lane_center_input = np.array([state['lane_center']])
             Xs.append(lane_center_input)
 
+        if settings.MODEL_INPUTS['jerk_rate']:
+            jerk_input = np.array([[state['jerk_rate']]])
+            Xs.append(jerk_input)
+
         return Xs
     
 
@@ -428,12 +432,12 @@ def run(id, carla_instance, stop, pause, episode, rl_algorithm, epsilon, show_pr
         total_speed = 0
         transition_info = deque(maxlen = use_n_future_states + 1)
 
-        
+        env.destroy_actors()
+        current_state, reward, agent_view = env.reset()
+        current_state = agent.get_model_inputs(current_state)
+        transition_info.append((current_state, None, 0, None))
         try:
-            env.destroy_actors()
-            current_state, reward, agent_view = env.reset()
-            current_state = agent.get_model_inputs(current_state)
-            transition_info.append((current_state, None, 0, None))
+            
             if agent.noise:
                 agent.noise.reset()
                 current_throttle_sigma = agent.noise.throttle_params['sigma']
@@ -569,9 +573,9 @@ def run(id, carla_instance, stop, pause, episode, rl_algorithm, epsilon, show_pr
 
                     last_action = mpc_action
                 except Exception as e:
-                    #print(f"MPC found no solution: {e}")
-                        done = True
-                        break
+                    print(f"MPC found no solution: {e}")
+                    done = True
+                    break
                                 
                 
             mpc_end = time.perf_counter()
@@ -583,7 +587,7 @@ def run(id, carla_instance, stop, pause, episode, rl_algorithm, epsilon, show_pr
                 mpc_action_counter += 1
             else:
                 action = predicted_action
-            
+                
             ## add noise to action
             if agent.noise:
                 noise = agent.noise.sample()
@@ -749,6 +753,7 @@ def run(id, carla_instance, stop, pause, episode, rl_algorithm, epsilon, show_pr
                 per_step_rewards['per_step_lane_center_rewards'] = additional_data.get('lane_center_rewards', 0) 
                 per_step_rewards['per_step_speed_rewards'] = additional_data.get('speed_rewards', 0)
                 per_step_rewards['per_step_collision_rewards'] = additional_data.get('collision_rewards', 0)
+                per_step_rewards['per_step_jerk_rewards'] = additional_data.get('jerk_rewards', 0)
                 
 
                 # send logging information to trainer
@@ -826,7 +831,12 @@ def test(model_path, sync_mode, env_settings_cond, step_cond, pause, synchronize
     log_file_name = f"test_log_{next_log_number}.csv"
     log_file_path = os.path.join(folder_name, log_file_name)
 
-    
+    width, height = 1280, 720  # Auflösung
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Use 'mp4v' for .mp4
+    video_writer = cv2.VideoWriter("output.mp4", fourcc, 10, (width, height))
+
+
     header = [
     'route', 'completed', 'completion_percentage', 'steps', 'episode_total_time', 
     'per_step_time', 'waypoints_reached', 'waypoints_skipped', 
@@ -937,6 +947,9 @@ def test(model_path, sync_mode, env_settings_cond, step_cond, pause, synchronize
                     cv2.imshow(f'Agent {1} - preview', env.preview_camera.image)
                     cv2.waitKey(1)
 
+                    frame = env.preview_camera.image  # Extract the frame
+                    frame = cv2.resize(frame, (width, height))
+                    video_writer.write(frame)
 
             step += 1
             #console_print_callback(fps_counter, env, qs[0], action, ACTIONS_NAMES[env.actions[action]])
@@ -1035,3 +1048,6 @@ def test(model_path, sync_mode, env_settings_cond, step_cond, pause, synchronize
             with open(log_file_path, mode='a', newline='') as file:
                 writer = csv.DictWriter(file, fieldnames=header)
                 writer.writerow(stats)
+
+    video_writer.release()
+    cv2.destroyAllWindows()
